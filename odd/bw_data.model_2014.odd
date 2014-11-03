@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="tei_odds.rng" type="xml"?>
+<TEI xmlns:rng="http://relaxng.org/ns/structure/1.0"
+  xmlns:sch="http://purl.oclc.org/dsdl/schematron"
+  xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>Data Model specification for Beethovens Werkstatt</title>
+        <respStmt>
+          <resp>Authored by</resp>
+          <name xml:id="MH">Maja Hartwig</name>
+          <name xml:id="JK">Johannes Kepper</name>
+          <name xml:id="PDR">Perry D. Roland</name>
+        </respStmt>
+        <respStmt>
+          <resp>In collaboration with</resp>
+          <name xml:id="BRA">Bernhard R. Appel</name>
+          <name xml:id="SC">Susanne Cox</name>
+          <name xml:id="EN">Elisa Novara</name>
+          <name xml:id="FR">Federica Rovelli</name>
+          <name xml:id="RS">Richard Sänger</name>
+          <name xml:id="JV">Joachim Veit</name>
+        </respStmt>
+      </titleStmt>
+      <publicationStmt>
+        <p/>
+      </publicationStmt>
+      <sourceDesc>
+        <p/>
+      </sourceDesc>
+    </fileDesc>
+    <revisionDesc>
+      <change n="1" when="2014-09-30" who="#JK">
+        <desc>Initial setup of the ODD, according to the outcomes of our working meeting in
+          September 2014 in Detmold.</desc>
+      </change>
+    </revisionDesc>
+  </teiHeader>
+  <text>
+    <front>
+      <divGen type="toc"/>
+    </front>
+    <body>
+      <schemaSpec ident="mei" start="mei meiHead meiCorpus music" prefix="mei_"
+        ns="http://www.music-encoding.org/ns/mei">
+        <moduleRef key="MEI"/>
+        <moduleRef key="MEI.shared"/>
+        <moduleRef key="MEI.header"/>
+        <moduleRef key="MEI.cmn"/>
+        <moduleRef key="MEI.mensural"/>
+        <moduleRef key="MEI.neumes"/>
+        <moduleRef key="MEI.analysis"/>
+        <moduleRef key="MEI.cmnOrnaments"/>
+        <moduleRef key="MEI.corpus"/>
+        <moduleRef key="MEI.critapp"/>
+        <moduleRef key="MEI.edittrans"/>
+        <moduleRef key="MEI.facsimile"/>
+        <moduleRef key="MEI.figtable"/>
+        <moduleRef key="MEI.frbr"/>
+        <moduleRef key="MEI.harmony"/>
+        <moduleRef key="MEI.linkalign"/>
+        <moduleRef key="MEI.lyrics"/>
+        <moduleRef key="MEI.midi"/>
+        <moduleRef key="MEI.namesdates"/>
+        <moduleRef key="MEI.performance"/>
+        <moduleRef key="MEI.ptrref"/>
+        <moduleRef key="MEI.tablature"/>
+        <moduleRef key="MEI.text"/>
+        <moduleRef key="MEI.usersymbols"/>
+
+        <moduleRef url="http://www.w3.org/Graphics/SVG/1.1/rng/svg11.rng">
+          <content>
+            <rng:define name="mei_model.graphicLike" combine="choice">
+              <rng:ref name="svg"/>
+            </rng:define>
+          </content>
+        </moduleRef>
+
+        <!--<elementSpec ident="mei" module="MEI.shared" mode="change">
+          <constraintSpec ident="Check_ID" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="mei:mei">
+                <sch:assert test="exists(./@xml:id)">
+                  Every document needs to have an xml:id.
+                </sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+        </elementSpec>
+        
+        <elementSpec ident="surface" module="MEI.facsimile" mode="change">
+          <constraintSpec ident="Check_surface" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="mei:surface">
+                <sch:assert test="exists(./@xml:id)">
+                  Every surface needs to have an xml:id.
+                </sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+        </elementSpec>
+        
+        <elementSpec ident="graphic" module="MEI.figtable" mode="change">
+          <constraintSpec ident="Check_graphic" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="mei:graphic[@type eq 'facsimile']">
+                <sch:assert test="exists(./@xml:id)">
+                  Every graphic needs to have an xml:id.
+                </sch:assert>
+                <sch:assert test="exists(./@target) and string-length(@target) gt 0">
+                  Every graphic needs a reference to an image.
+                </sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+        </elementSpec>
+        
+        <elementSpec ident="zone" module="MEI.facsimile" mode="change">
+          <constraintSpec ident="Check_zone" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="mei:zone">
+                <sch:assert test="exists(./@xml:id)">
+                  Every zone needs to have an xml:id.
+                </sch:assert>
+                <sch:assert test="exists(./@ulx)">
+                  Every zone needs an upper left x (@ulx) value.
+                </sch:assert>
+                <sch:assert test="exists(./@uly)">
+                  Every zone needs an upper left y (@uly) value.
+                </sch:assert>
+                <sch:assert test="exists(./@lrx)">
+                  Every zone needs a lower right x (@lrx) value.
+                </sch:assert>
+                <sch:assert test="exists(./@lry)">
+                  Every zone needs a lower right y (@lry) value.
+                </sch:assert>
+                <sch:assert role="warning" test="exists(@data) and starts-with(@data,'#') and local-name(id(substring(@data,2))) eq @type">
+                  The reference to the data element seems broken, as its local-name() doesn't match the @type of the zone.
+                </sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+        </elementSpec>
+        
+        <elementSpec ident="mdiv" module="MEI.shared" mode="change">
+          <constraintSpec ident="Check_mdiv" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="mei:mdiv">
+                <sch:assert role="warning" test="exists(./@xml:id)">
+                  Every mdiv should have an xml:id.
+                </sch:assert>
+                <sch:assert role="warning" test="exists(./@label) and string-length(./@label) gt 0">
+                  Every mdiv should have a label with a length of at least one character.
+                </sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+        </elementSpec>
+        
+        <elementSpec ident="measure" module="MEI.cmn" mode="change">
+          <constraintSpec ident="Check_measure" scheme="isoschematron" mode="add">
+            <constraint>
+                <sch:rule context="mei:measure">
+                  <sch:assert role="warning" test="exists(./@xml:id)">
+                    Every measure should have an xml:id.
+                  </sch:assert>                  
+                </sch:rule>
+            </constraint>
+          </constraintSpec>
+        </elementSpec>
+        
+        <elementSpec ident="layer" module="MEI.shared" mode="change">
+          <!-\- What about editorial markup? Could we express this restriction in a better way? This requires further thinking… -\->
+          <constraintSpec ident="Check_layer" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="mei:layer">
+                <sch:assert test="not(exists(./mei:mRest)) or (./mei:mRest and count(./child::*) eq 1)">
+                  If there is an mRest, no other elements are allowed in the layer.
+                </sch:assert>
+                <sch:assert test="not(exists(./mei:mSpace)) or (./mei:mSpace and count(./child::*) eq 1)">
+                  If there is an mSpace, no other elements are allowed in the layer.
+                </sch:assert>
+                <sch:assert test="not(exists(./mei:multiRest)) or (./mei:multiRest and count(./child::*) eq 1)">
+                  If there is a multiRest, no other elements are allowed in the layer.
+                </sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+        </elementSpec>-->
+
+
+        <classSpec ident="att.trans" module="MEI.edittrans" type="atts" mode="change">
+          <desc>Attributes for elements encoding authorial or scribal intervention when transcribing
+            manuscript or similar sources.</desc>
+          <classes>
+            <memberOf key="att.handident"/>
+            <memberOf key="att.sequence"/>
+            <memberOf key="att.declaring" mode="add"/>
+          </classes>
+          <constraintSpec ident="check_changeState.targets" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="@changeState">
+                <sch:assert role="warning"
+                  test="every $ref in tokenize(.,' ') satisfies starts-with($ref,'#')"> Every URI
+                  should start with a hash. </sch:assert>
+                <sch:assert role="warning"
+                  test="every $ref in tokenize(.,' ') satisfies local-name(id(substring($ref,2))) = ('change','state')"
+                  > The changeState attribute should always point to change or state elements in the
+                  header. </sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+          <attList>
+            <attDef ident="changeState" mode="add">
+              <desc>Points to &lt;change&gt; or &lt;state&gt; elements in the header. If pointing to
+                a &lt;state&gt;, the current element describes an action that results in the
+                referenced state. </desc>
+              <datatype>
+                <rng:ref name="data.URIS"/>
+              </datatype>
+            </attDef>
+            <attDef ident="instant" mode="add">
+              <desc>The @instant attribute is syntactic sugar for classifying a scribal intervention
+                as ad-hoc modification, that is without interrupting the writing process.</desc>
+              <datatype>
+                <rng:choice>
+                  <rng:ref name="data.BOOLEAN"/>
+                  <rng:value>unknown</rng:value>
+                </rng:choice>
+              </datatype>
+            </attDef>
+          </attList>
+        </classSpec>
+
+        <classSpec ident="att.metaMark.anl" module="MEI.editTrans" type="atts" mode="add">
+          <desc>Analytical domain attributes.</desc>
+          <classes>
+            <memberOf key="att.common.anl"/>
+          </classes>
+        </classSpec>
+        <classSpec ident="att.metaMark.ges" module="MEI.editTrans" type="atts" mode="add">
+          <desc>Gestural domain attributes.</desc>
+          <classes>
+            <memberOf key="att.duration.performed"/>
+          </classes>
+        </classSpec>
+        <classSpec ident="att.metaMark.log" module="MEI.editTrans" type="atts" mode="add">
+          <desc>Logical domain attributes.</desc>
+          <classes>
+            <memberOf key="att.controlevent"/>
+            <memberOf key="att.startendid"/>
+            <memberOf key="att.timestamp2.musical"/>
+            <memberOf key="att.edit"/>
+            <memberOf key="att.trans"/>
+          </classes>
+        </classSpec>
+        <classSpec ident="att.metaMark.vis" module="MEI.editTrans" type="atts" mode="add">
+          <desc>Visual domain attributes.</desc>
+          <classes>
+            <memberOf key="att.placement"/>
+          </classes>
+        </classSpec>
+
+        <elementSpec ident="metaMark" module="MEI.edittrans" mode="add">
+          <desc>A graphical or textual statement with additional / explanatory information about the
+            musical text. The textual consequences of this operation are encoded independently with
+            other elements, such as &lt;add&gt; and &lt;del&gt;. </desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.facsimile"/>
+            <memberOf key="att.lang"/>
+            <memberOf key="att.metaMark.log"/>
+            <memberOf key="att.metaMark.vis"/>
+            <memberOf key="att.metaMark.ges"/>
+            <memberOf key="att.metaMark.anl"/>
+            <memberOf key="model.controleventLike"/>
+            <memberOf key="att.pointing"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:text/>
+                <rng:ref name="model.textphraseLike.limited"/>
+                <rng:ref name="model.editLike"/>
+                <rng:ref name="model.transcriptionLike"/>
+                <rng:ref name="model.sectionLike"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+          <constraintSpec ident="metaMark_start-type_attributes_required" scheme="isoschematron">
+            <constraint>
+              <sch:rule context="mei:metaMark">
+                <sch:assert test="@startid or @tstamp or @tstamp.ges or @tstamp.real"> Must have one
+                  of the attributes: startid, tstamp, tstamp.ges or tstamp.real</sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+          <attList>
+            <attDef ident="function">
+              <desc>Describes the purpose of the metaMark.</desc>
+              <valList type="semi">
+                <valItem ident="confirmation">
+                  <desc>confirmation of a previous textual decision; i.e., cancellation a deleted
+                    passage with a different writing medium.</desc>
+                </valItem>
+                <valItem ident="addition">
+                  <desc>denoted material is to be inserted in the musical text.</desc>
+                </valItem>
+                <valItem ident="deletion">
+                  <desc>denoted material is no longer part of the musical text.</desc>
+                </valItem>
+                <valItem ident="substitution">
+                  <desc>denoted material is replaced, either by the musical text pointed at with the
+                    @target attribute or the musical content of the metaMark element.</desc>
+                </valItem>
+                <valItem ident="clarification">
+                  <desc>attempt to clarify a potentially illegible or otherwise unclear part of the
+                    musical text.</desc>
+                </valItem>
+                <valItem ident="question">
+                  <desc>marks a section of the musical text for further consideration.</desc>
+                </valItem>
+                <valItem ident="investigation">
+                  <desc>marks a section of the musical text as an investigation of the consequences
+                    of certain compositional decisions or potential alternatives.</desc>
+                </valItem>
+                <valItem ident="restoration">
+                  <desc>declares a formerly cancelled part of the musical text as valid
+                    again.</desc>
+                </valItem>
+                <valItem ident="navigation">
+                  <desc>clarification of the reading order of the musical text.</desc>
+                </valItem>
+              </valList>
+            </attDef>
+          </attList>
+        </elementSpec>
+
+        <elementSpec ident="creation" module="MEI.shared" mode="change">
+          <desc>Non-bibliographic details of the creation of an intellectual entity, such as the
+            date, place, and circumstances of its composition.
+            <!-- This element is
+        modelled on an element in the Text Encoding Initiative (TEI).--></desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.bibl"/>
+            <memberOf key="att.facsimile"/>
+            <memberOf key="att.lang"/>
+            <memberOf key="model.biblPart"/>
+          </classes>
+          <content>
+            <!--<rng:choice>
+              <rng:oneOrMore>
+                <rng:ref name="model.pLike"/>
+              </rng:oneOrMore>
+              <rng:ref name="genDesc"/>
+            </rng:choice>-->
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:text/>
+                <rng:ref name="date"/>
+                <rng:ref name="genDesc"/>
+                <rng:ref name="geogName"/>
+                <rng:ref name="model.pLike"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+        </elementSpec>
+
+        <elementSpec ident="genDesc" module="MEI.edittrans" mode="add">
+          <desc>Description of textual genesis: This element bundles information about the textual
+            development of a work, which can be traced in one or more sources. Even in the case of
+            an unknown or only partly-known chronological order of states and / or changes,
+            information about their relationships can be provided using their @next, @prev, @follows
+            and @precedes attributes. &lt;genDesc&gt; may be nested to reflect groups of processes
+            with unknown chronological order inside a larger set of processes with known order or
+            vice versa. </desc>
+          <classes>
+            <memberOf key="att.common"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:ref name="change"/>
+                <rng:ref name="state"/>
+                <rng:ref name="genDesc"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+          <attList>
+            <attDef ident="ordered">
+              <desc>indicates whether the child elements are known to be in chronological order.
+                Defaults to false.</desc>
+              <datatype>
+                <rng:ref name="data.BOOLEAN"/>
+              </datatype>
+            </attDef>
+          </attList>
+        </elementSpec>
+
+        <elementSpec ident="change" module="MEI.header" mode="change">
+          <desc>Describes a change of arbitrary scope, either by the editor of the MEI file or by a
+            scribe of the text of the encoded work.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.bibl"/>
+            <memberOf key="att.datable"/>
+            <memberOf key="att.responsibility"/>
+          </classes>
+          <content>
+            <rng:optional>
+              <rng:ref name="respStmt"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="changeDesc"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="model.dateLike"/>
+            </rng:optional>
+          </content>
+          <constraintSpec ident="change_requirements" scheme="isoschematron" mode="change">
+            <constraint>
+              <sch:rule context="mei:change">
+                <sch:assert
+                  test="(ancestor::mei:revisionDesc and (@isodate or mei:date)) or 
+                    not(ancestor::mei:revisionDesc)"
+                  >The date of the change must be recorded in an isodate attribute or date
+                  element.</sch:assert>
+                <sch:assert
+                  test="(ancestor::mei:revisionDesc and (@resp or mei:respStmt)) or 
+                    not(ancestor::mei:revisionDesc)"
+                  >The person responsible for the change must be recorded in a resp attribute or
+                  respStmt element.</sch:assert>
+                <sch:assert
+                  test="(ancestor::mei:revisionDesc and mei:changeDesc) or 
+                    not(ancestor::mei:revisionDesc)"
+                  >A change inside revisionDesc should always have a changeDesc.</sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+        </elementSpec>
+
+        <elementSpec ident="state" module="MEI.header" mode="add">
+          <desc>Describes a distinctive state in the textual development of a work. Any scribal
+            modifications encoded with elements like &lt;add&gt;, &lt;del&gt; etc. that refer to a
+            state element are regarded as the operations that need to be implemented to reach this
+            state; that is, they precede this state.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.common.anl"/>
+            <memberOf key="att.declaring"/>
+            <memberOf key="att.datapointing"/>
+            <memberOf key="att.typed"/>
+            <memberOf key="att.pointing"/>
+            <memberOf key="att.bibl"/>
+            <memberOf key="att.responsibility"/>
+            <memberOf key="att.datable"/>
+          </classes>
+          <content>
+            <rng:optional>
+              <rng:ref name="respStmt"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="stateDesc"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="model.dateLike"/>
+            </rng:optional>
+          </content>
+        </elementSpec>
+
+        <elementSpec ident="stateDesc" module="MEI.header" mode="add">
+          <desc>Description of a state of the work as part of its textual genesis.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.bibl"/>
+            <memberOf key="att.lang"/>
+          </classes>
+          <content>
+            <rng:oneOrMore>
+              <rng:ref name="model.pLike"/>
+            </rng:oneOrMore>
+          </content>
+        </elementSpec>
+
+        <!-- 
+        
+          <sch:assert test="not(exists(@facs)) or (every $i in tokenize(@facs, ' ') satisfies starts-with($i, '#') and id(substring($i, 2))[local-name() = ('zone','g','path')])">
+                    Every space-separated value in @facs must point to a zone or an svg:g or sv. 
+                  </sch:assert>
+        
+        -->
+
+        <classSpec ident="att.common.anl" module="MEI.analysis" type="atts" mode="replace">
+          <desc>Common analytical attributes. When the meiLinkAlign module is used, the @when
+            attribute is also a member of this attribute class.</desc>
+          <classes>
+            <memberOf key="att.alignment"/>
+          </classes>
+          <attList>
+            <attDef ident="copyof" usage="opt">
+              <desc>points to an element of which the current element is a copy.</desc>
+              <datatype>
+                <rng:ref name="data.URI"/>
+              </datatype>
+              <constraintSpec ident="When_copyof_element_empy" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="mei:*[@copyof]">
+                    <sch:assert test="count(child::node()) = 0">An element with a copyof attribute
+                      cannot have content.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+            </attDef>
+            <attDef ident="corresp" usage="opt">
+              <desc>used to point to other elements that correspond to this one in a generic
+                fashion.</desc>
+              <datatype>
+                <rng:ref name="data.URIS"/>
+              </datatype>
+            </attDef>
+            <attDef ident="next" usage="opt">
+              <desc>used to point to the next event(s) in a user-defined collection.</desc>
+              <datatype>
+                <rng:ref name="data.URIS"/>
+              </datatype>
+            </attDef>
+            <attDef ident="precedes" usage="opt" mode="add">
+              <desc>points to one or more events in a user-defined collection that are known to be
+                successors of the current element.</desc>
+              <datatype>
+                <rng:ref name="data.URIS"/>
+              </datatype>
+            </attDef>
+            <attDef ident="prev" usage="opt">
+              <desc>points to the previous event(s) in a user-defined collection.</desc>
+              <datatype>
+                <rng:ref name="data.URIS"/>
+              </datatype>
+            </attDef>
+            <attDef ident="follows" usage="opt" mode="add">
+              <desc>points to one or more events in a user-defined collection that are known to be
+                predecessors of the current element.</desc>
+              <datatype>
+                <rng:ref name="data.URIS"/>
+              </datatype>
+            </attDef>
+            <attDef ident="sameas" usage="opt">
+              <desc>points to an element that is the same as the current element but is not a
+                literal copy of the current element.</desc>
+              <datatype>
+                <rng:ref name="data.URIS"/>
+              </datatype>
+            </attDef>
+            <attDef ident="synch" usage="opt">
+              <desc>points to elements that are synchronous with the current element.</desc>
+              <datatype>
+                <rng:ref name="data.URIS"/>
+              </datatype>
+            </attDef>
+          </attList>
+        </classSpec>
+
+      </schemaSpec>
+    </body>
+  </text>
+</TEI>
