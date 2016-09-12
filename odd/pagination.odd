@@ -6,21 +6,15 @@
   <teiHeader>
     <fileDesc>
       <titleStmt>
-        <title>Data Model specification for Beethovens Werkstatt</title>
+        <title>Data Model for Pagination</title>
         <respStmt>
           <resp>Authored by</resp>
-          <name xml:id="MH">Maja Hartwig</name>
           <name xml:id="JK">Johannes Kepper</name>
-          <name xml:id="PDR">Perry D. Roland</name>
+          <name xml:id="KR">Kristina Richts</name>
         </respStmt>
         <respStmt>
           <resp>In collaboration with</resp>
-          <name xml:id="BRA">Bernhard R. Appel</name>
-          <name xml:id="SC">Susanne Cox</name>
-          <name xml:id="EN">Elisa Novara</name>
-          <name xml:id="FR">Federica Rovelli</name>
-          <name xml:id="RS">Richard Sänger</name>
-          <name xml:id="JV">Joachim Veit</name>
+          <name xml:id="MH">Maja Hartwig</name>
         </respStmt>
       </titleStmt>
       <publicationStmt>
@@ -31,12 +25,8 @@
       </sourceDesc>
     </fileDesc>
     <revisionDesc>
-      <change n="1" when="2014-09-30" who="#JK">
-        <desc>Initial setup of the ODD, according to the outcomes of our working meeting in
-          September 2014 in Detmold.</desc>
-      </change>
-      <change n="2" when="2015-10-12" who="#JK">
-        <desc>Addition of draft element and related changes.</desc>
+      <change n="1" when="2015-12-20" who="#JK">
+        <desc>Initial setup of the ODD, according to the outcomes of a discussion on 2015-12-18.</desc>
       </change>
     </revisionDesc>
   </teiHeader>

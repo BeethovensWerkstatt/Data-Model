@@ -1,0 +1,1119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns:rng="http://relaxng.org/ns/structure/1.0"
+  xmlns:sch="http://purl.oclc.org/dsdl/schematron"
+  xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>Data Model specification for Beethovens Werkstatt</title>
+        <respStmt>
+          <resp>Authored by</resp>
+          <name xml:id="MH">Maja Hartwig</name>
+          <name xml:id="JK">Johannes Kepper</name>
+          <name xml:id="PDR">Perry D. Roland</name>
+        </respStmt>
+        <respStmt>
+          <resp>In collaboration with</resp>
+          <name xml:id="BRA">Bernhard R. Appel</name>
+          <name xml:id="SC">Susanne Cox</name>
+          <name xml:id="EN">Elisa Novara</name>
+          <name xml:id="KR">Kristina Richts</name>
+          <name xml:id="FR">Federica Rovelli</name>
+          <name xml:id="RS">Richard Sänger</name>
+          <name xml:id="JV">Joachim Veit</name>
+        </respStmt>
+      </titleStmt>
+      <publicationStmt>
+        <p/>
+      </publicationStmt>
+      <sourceDesc>
+        <p/>
+      </sourceDesc>
+    </fileDesc>
+    <revisionDesc>
+      <change n="1" when="2014-09-30" who="#JK">
+        <desc>Initial setup of the ODD, according to the outcomes of our working meeting in
+          September 2014 in Detmold.</desc>
+      </change>
+      <change n="2" when="2015-10-12" who="#JK">
+        <desc>Addition of draft element and related changes.</desc>
+      </change>
+      <change n="3" when="2016-04-07" who="#JK"> Adjustments to match MEI 3.0.0. New file
+        bw_geneticMEI.odd based on bw_data.model_2014.odd.</change>
+    </revisionDesc>
+  </teiHeader>
+  <text>
+    <front>
+      <divGen type="toc"/>
+    </front>
+    <body>
+      <schemaSpec ident="mei" start="mei meiHead meiCorpus music" prefix="mei_"
+        ns="http://www.music-encoding.org/ns/mei">
+        <moduleRef key="MEI"/>
+        <moduleRef key="MEI.shared"/>
+        <moduleRef key="MEI.header"/>
+        <moduleRef key="MEI.frbr"/>
+        <moduleRef key="MEI.cmn"/>
+        <moduleRef key="MEI.mensural"/>
+        <moduleRef key="MEI.neumes"/>
+        <moduleRef key="MEI.analysis"/>
+        <moduleRef key="MEI.cmnOrnaments"/>
+        <moduleRef key="MEI.corpus"/>
+        <moduleRef key="MEI.critapp"/>
+        <moduleRef key="MEI.edittrans"/>
+        <moduleRef key="MEI.facsimile"/>
+        <moduleRef key="MEI.figtable"/>
+        <moduleRef key="MEI.harmony"/>
+        <moduleRef key="MEI.lyrics"/>
+        <moduleRef key="MEI.midi"/>
+        <moduleRef key="MEI.namesdates"/>
+        <moduleRef key="MEI.performance"/>
+        <moduleRef key="MEI.ptrref"/>
+        <moduleRef key="MEI.tablature"/>
+        <moduleRef key="MEI.text"/>
+        <moduleRef key="MEI.usersymbols"/>
+
+        <!-- Addition of SVG Module  
+          * Allow SVG everywhere where model.graphicLike is allowed 
+        -->
+        <moduleRef url="http://www.w3.org/Graphics/SVG/1.1/rng/svg11.rng">
+          <content>
+            <rng:define name="mei_model.graphicLike" combine="choice">
+              <rng:ref name="svg"/>
+            </rng:define>
+          </content>
+        </moduleRef>
+
+        <!-- Changes to att.trans attribute class
+          * make att.trans also member of att.declaring 
+          * define attribute @changeState
+          * add Schematron to ensure @changeState points to either <change> or <state> in the header
+          * define attribute @instant for immediate corrections / interventions
+        -->
+        <classSpec ident="att.trans" module="MEI.edittrans" type="atts" mode="change">
+          <desc>Attributes for elements encoding authorial or scribal intervention when transcribing
+            manuscript or similar sources.</desc>
+          <classes>
+            <memberOf key="att.handident"/>
+            <memberOf key="att.sequence"/>
+            <memberOf key="att.declaring" mode="add"/>
+          </classes>
+          <constraintSpec ident="check_changeState.targets" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="@changeState">
+                <sch:assert role="warning"
+                  test="every $ref in tokenize(.,' ') satisfies starts-with($ref,'#')"> Every URI
+                  should start with a hash. </sch:assert>
+                <sch:assert role="warning"
+                  test="every $ref in tokenize(.,' ') satisfies local-name(id(substring($ref,2))) = ('change','state')"
+                  > The changeState attribute should always point to change or state elements in the
+                  header. </sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+          <attList>
+            <attDef ident="changeState" mode="add">
+              <desc>Points to &lt;change&gt; or &lt;state&gt; elements in the header. If pointing to
+                a &lt;state&gt;, the current element describes an action that results in the
+                referenced state. </desc>
+              <datatype maxOccurs="unbounded">
+                <rng:ref name="data.URI"/>
+              </datatype>
+            </attDef>
+            <attDef ident="instant" mode="add">
+              <desc>The @instant attribute is syntactic sugar for classifying a scribal intervention
+                as ad-hoc modification, that is without interrupting the writing process.</desc>
+              <datatype>
+                <rng:choice>
+                  <rng:ref name="data.BOOLEAN"/>
+                  <rng:value>unknown</rng:value>
+                </rng:choice>
+              </datatype>
+            </attDef>
+          </attList>
+        </classSpec>
+        
+        <!-- Addition of att.metaMark.anl attribute class
+          * add attribute class for analytical domain attributes of <metaMark> and similar
+        -->
+        <classSpec ident="att.metaMark.anl" module="MEI.edittrans" type="atts" mode="add">
+          <desc>Analytical domain attributes.</desc>
+          <classes>
+            <memberOf key="att.common.anl"/>
+          </classes>
+        </classSpec>
+        
+        <!-- Addition of att.metaMark.ges attribute class
+          * add attribute class for gestural domain attributes of <metaMark> and similar
+        -->
+        <classSpec ident="att.metaMark.ges" module="MEI.edittrans" type="atts" mode="add">
+          <desc>Gestural domain attributes.</desc>
+          <classes>
+            <memberOf key="att.duration.performed"/>
+          </classes>
+        </classSpec>
+        
+        <!-- Addition of att.metaMark.log attribute class
+          * add attribute class for logical domain attributes of <metaMark> and similar
+          * give metaMark access to several attribute classes
+        -->
+        <classSpec ident="att.metaMark.log" module="MEI.edittrans" type="atts" mode="add">
+          <desc>Logical domain attributes.</desc>
+          <classes>
+            <memberOf key="att.controlevent"/>
+            <memberOf key="att.startendid"/>
+            <memberOf key="att.timestamp2.musical"/>
+            <memberOf key="att.edit"/>
+            <memberOf key="att.trans"/>
+          </classes>
+        </classSpec>
+        
+        <!-- Addition of att.metaMark.vis attribute class
+          * add attribute class for visual domain attributes of <metaMark> and similar
+          * give metaMark access to att.placement attribute class
+        -->
+        <classSpec ident="att.metaMark.vis" module="MEI.edittrans" type="atts" mode="add">
+          <desc>Visual domain attributes.</desc>
+          <classes>
+            <memberOf key="att.placement"/>
+          </classes>
+        </classSpec>
+        
+        <!-- Addition of <metaMark> element -->
+        <elementSpec ident="metaMark" module="MEI.edittrans" mode="add">
+          <desc>A graphical or textual statement with additional / explanatory information about the
+            musical text. The textual consequences of this intervention are encoded independently with
+            other elements, such as &lt;add&gt; and &lt;del&gt;. </desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.facsimile"/>
+            <memberOf key="att.lang"/>
+            <memberOf key="att.metaMark.log"/>
+            <memberOf key="att.metaMark.vis"/>
+            <memberOf key="att.metaMark.ges"/>
+            <memberOf key="att.metaMark.anl"/>
+            <memberOf key="model.controleventLike"/>
+            <memberOf key="att.pointing"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:text/>
+                <rng:ref name="model.textphraseLike.limited"/>
+                <rng:ref name="model.editLike"/>
+                <rng:ref name="model.transcriptionLike"/>
+                <rng:ref name="model.sectionLike"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+          <constraintSpec ident="metaMark_start-type_attributes_required" scheme="isoschematron">
+            <constraint>
+              <sch:rule context="mei:metaMark">
+                <sch:assert test="@startid or @tstamp or @tstamp.ges or @tstamp.real"> Must have one
+                  of the attributes: startid, tstamp, tstamp.ges or tstamp.real</sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+          <attList>
+            <attDef ident="function">
+              <desc>Describes the purpose of the metaMark.</desc>
+              <valList type="semi">
+                <valItem ident="confirmation">
+                  <desc>confirmation of a previous textual decision; i.e., cancellation a deleted
+                    passage with a different writing medium.</desc>
+                </valItem>
+                <valItem ident="addition">
+                  <desc>denoted material is to be inserted in the musical text.</desc>
+                </valItem>
+                <valItem ident="deletion">
+                  <desc>denoted material is no longer part of the musical text.</desc>
+                </valItem>
+                <valItem ident="substitution">
+                  <desc>denoted material is replaced, either by the musical text pointed at with the
+                    @target attribute or the musical content of the metaMark element.</desc>
+                </valItem>
+                <valItem ident="clarification">
+                  <desc>attempt to clarify a potentially illegible or otherwise unclear part of the
+                    musical text.</desc>
+                </valItem>
+                <valItem ident="question">
+                  <desc>marks a section of the musical text for further consideration.</desc>
+                </valItem>
+                <valItem ident="investigation">
+                  <desc>marks a section of the musical text as an investigation of the consequences
+                    of certain compositional decisions or potential alternatives.</desc>
+                </valItem>
+                <valItem ident="restoration">
+                  <desc>declares a formerly cancelled part of the musical text as valid
+                    again.</desc>
+                </valItem>
+                <valItem ident="navigation">
+                  <desc>clarification of the reading order of the musical text.</desc>
+                </valItem>
+              </valList>
+            </attDef>
+          </attList>
+          <remarks>
+            <p>This element is used to encode 
+              <ref target="http://beethovens-werkstatt.de/glossary/metatext/">explicit metatexts</ref>
+              as defined by the Beethovens Werkstatt project. 
+              </p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Changes to <creation> element
+          * allow newly created <genDesc> as child
+        -->
+        <elementSpec ident="creation" module="MEI.shared" mode="change">
+          <desc>Non-bibliographic details of the creation of an intellectual entity, in narrative form,
+            such as the date, place, and circumstances of its composition. More detailed information may
+            be captured within the history element.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.bibl"/>
+            <memberOf key="att.facsimile"/>
+            <memberOf key="att.lang"/>
+            <memberOf key="model.biblPart"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:text/>
+                <rng:ref name="date"/>
+                <rng:ref name="model.nameLike"/>
+                <rng:ref name="genDesc"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+          <remarks>
+            <p>This element is modelled on an element in the Text Encoding Initiative (TEI).</p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Addition of <genDesc> element -->
+        <elementSpec ident="genDesc" module="MEI.edittrans" mode="add">
+          <desc>Description of textual genesis: This element bundles information about the textual
+            development of a work, which can be traced in one or more sources. Even in the case of
+            an unknown or only partly-known chronological order of states and / or changes,
+            information about their relationships can be provided using their @next, @prev, @follows
+            and @precedes attributes. &lt;genDesc&gt; may be nested to reflect groups of processes
+            with unknown chronological order inside a larger set of processes with known order or
+            vice versa.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:ref name="change"/>
+                <rng:ref name="state"/>
+                <rng:ref name="genDesc"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+          <attList>
+            <attDef ident="ordered">
+              <desc>indicates whether the child elements are known to be in chronological order.
+                Defaults to false.</desc>
+              <datatype>
+                <rng:ref name="data.BOOLEAN"/>
+              </datatype>
+            </attDef>
+          </attList>
+          <remarks>
+            <p>Ideally, this element contains an alteration of <gi scheme="MEI">change</gi> and
+              <gi scheme="MEI">state</gi> elements, describing textual products and the processes
+              leading to them. In practice, however, any combination is valid, i.e. some projects
+              may decide to encode <gi scheme="MEI">change</gi>s or <gi scheme="MEI">state</gi>s 
+              only, while others do both of them. This should be documented in an adequate
+              <gi scheme="MEI">encodingDesc</gi>.
+            </p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Changes to <change> element
+          * <change> is now used for both changes to the file itself and for (authorial) modifications to the musical text
+          * adjusting description to reflect both use cases
+          * allow <relationList> inside <change>
+          * adjusting Schematron rules to apply only to <revisionDesc>-based changes
+        -->
+        <elementSpec ident="change" module="MEI.header" mode="change">
+          <desc>Describes a change of arbitrary scope, either by the editor of the MEI file or by a
+            scribe of the text of the encoded work.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.bibl"/>
+            <memberOf key="att.datable"/>
+            <memberOf key="att.responsibility"/>
+            <memberOf key="att.typed"/>
+          </classes>
+          <content>
+            <rng:optional>
+              <rng:ref name="respStmt"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="changeDesc"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="relationList"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="model.dateLike"/>
+            </rng:optional>
+          </content>
+          <constraintSpec ident="change_requirements" scheme="isoschematron" mode="change">
+            <constraint>
+              <sch:rule context="mei:change">
+                <sch:assert
+                  test="(ancestor::mei:revisionDesc and (@isodate or mei:date)) or 
+                    not(ancestor::mei:revisionDesc)"
+                  >The date of the change must be recorded in an isodate attribute or date
+                  element.</sch:assert>
+                <sch:assert
+                  test="(ancestor::mei:revisionDesc and (@resp or mei:respStmt)) or 
+                    not(ancestor::mei:revisionDesc)"
+                  >The person responsible for the change must be recorded in a resp attribute or
+                  respStmt element.</sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+          <remarks>
+            <p>For <gi scheme="MEI">change</gi>s nested inside <gi scheme="MEI">revisionDesc</gi>, 
+              additions, deletions, and significant recoding should be noted, but not correction of
+              minor typographical errors. It is recommended that revisions should be entered in reverse
+              chronological order, with the most recent <gi scheme="MEI">change</gi> first. The
+              <att>resp</att> attribute contains a pointer to an element containing info about the
+              person/entity responsible for change. The <gi scheme="MEI">edition</gi> element can be
+              used to designate an MEI encoding that has been so substantively changed that it
+              constitutes a new version that supersedes earlier versions.</p>
+          </remarks>
+          <remarks>
+            <p>
+              A <gi scheme="MEI">change</gi> as part of a <gi scheme="MEI">genDesc</gi> may be used
+              to collect individual textual modifications (<gi scheme="MEI">add</gi>, <gi scheme="MEI">del</gi> etc.),
+              which are all part of the same writing act, but have to be split into multiple elements because
+              of overlapping hierarchies in XML.
+            </p>
+          </remarks>
+          <remarks>
+            <p>This element is modelled on an element in the Encoded Archival Description (EAD)
+              standard.</p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Addition of <state> element -->
+        <elementSpec ident="state" module="MEI.header" mode="add">
+          <desc>Describes a distinctive state in the textual development of a work. Any scribal
+            modifications encoded with elements like &lt;add&gt;, &lt;del&gt; etc. that refer to a
+            state element are regarded as the operations that need to be implemented to reach this
+            state; that is, they precede this state.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.common.anl"/>
+            <memberOf key="att.declaring"/>
+            <memberOf key="att.datapointing"/>
+            <memberOf key="att.typed"/>
+            <memberOf key="att.pointing"/>
+            <memberOf key="att.bibl"/>
+            <memberOf key="att.responsibility"/>
+            <memberOf key="att.datable"/>
+          </classes>
+          <content>
+            <rng:optional>
+              <rng:ref name="respStmt"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="stateDesc"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="relationList"/>
+            </rng:optional>
+            <rng:optional>
+              <rng:ref name="model.dateLike"/>
+            </rng:optional>
+          </content>
+          <remarks>
+            <p>
+              Like <gi scheme="MEI">change</gi> elements, <gi scheme="MEI">state</gi> may be used
+              to collect individual textual modifications (<gi scheme="MEI">add</gi>, <gi scheme="MEI">del</gi> etc.),
+              which are all part of the same writing act, but have to be split into multiple elements because
+              of overlapping hierarchies in XML. When both <gi scheme="MEI">change</gi> and <gi scheme="MEI">state</gi>
+              alements are used, though, it is advised to prefer <gi scheme="MEI">change</gi> elements for this purpose, 
+              and not duplicate the connection from any single <gi scheme="MEI">add</gi> element or similar.
+            </p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Addition of <stateDesc> element -->
+        <elementSpec ident="stateDesc" module="MEI.header" mode="add">
+          <desc>Description of a state of the work as part of its textual genesis.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.bibl"/>
+            <memberOf key="att.lang"/>
+          </classes>
+          <content>
+            <rng:oneOrMore>
+              <rng:ref name="model.pLike"/>
+            </rng:oneOrMore>
+          </content>
+        </elementSpec>
+        
+        <!-- Changes to <relation> element
+          * adding att.origin attribute class
+          * adding Schematron to prevent use of @origin in original use case
+          * adjusting descriptions and remarks to reflect @origin
+        -->
+        <elementSpec ident="relation" module="MEI.frbr" mode="change">
+          <desc>A relation element describes the relationship either between its parent or the 
+            element referenced by the origin attribute, and the object
+            referenced by the relation element's target attribute.</desc>
+          <classes>
+            <memberOf key="att.pointing"/>
+            <memberOf key="att.bibl"/>
+            <memberOf key="att.edit"/>
+            <memberOf key="att.rel"/>
+            <memberOf key="att.common"/>
+            <memberOf key="model.relationLike"/>
+            <memberOf key="att.origin"/>
+          </classes>
+          <content>
+            <rng:empty/>
+          </content>
+          <constraintSpec ident="check_origin" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="mei:relation">
+                <sch:assert
+                  test="(parent::mei:relationList/parent::mei:*[local-name() = ('work','expression','source','item')] and not(@origin)) or not(parent::mei:relationList/parent::mei:*[local-name() = ('work','expression','source','item')])"
+                  >When used within work, expression, source or item, relation must not use the
+                  @origin attribute.</sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+          <remarks>
+            <p>The <att>rel</att> attribute describes the nature of the relationship. In this triple,
+              the subject is either identified by the <att>origin</att> attribute or the relation's parent element
+              (default, when no <att>origin</att> is provided). The object referenced by the <att>target</att> attribtue 
+              serves as object of the triple. This element is
+              used to implement FRBR-like structures in MEI.</p>
+          </remarks>
+        </elementSpec>
+
+        <!-- Addition of att.origin attribute class -->
+        <classSpec ident="att.origin" module="MEI.shared" type="atts" mode="add">
+          <desc>Attributes to identify the origin (subject) of a (standoff) link.</desc>
+          <attList>
+            <attDef ident="origin" usage="opt">
+              <desc>allows to identify external electronic object(s) as origin. That is, while
+                @target identifies the object of a relation, @origin identifies the subject.</desc>
+              <datatype maxOccurs="unbounded">
+                <rng:ref name="data.URI"/>
+              </datatype>
+            </attDef>
+          </attList>
+        </classSpec>
+
+        <!-- Changes to <mdiv> element
+          * allow drafts child
+        -->
+        <elementSpec ident="mdiv" module="MEI.shared" mode="change">
+          <desc>(musical division) – contains a subdivision of the body of a musical text.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.declaring"/>
+            <memberOf key="att.facsimile"/>
+            <memberOf key="att.typed"/>
+            <memberOf key="model.mdivLike"/>
+          </classes>
+          <content>
+            <rng:choice>
+              <rng:group>
+                <rng:optional>
+                  <rng:ref name="model.scoreLike"/>
+                </rng:optional>
+                <rng:optional>
+                  <rng:ref name="model.partsLike"/>
+                </rng:optional>
+                <rng:optional>
+                  <rng:ref name="drafts"/>
+                </rng:optional>
+              </rng:group>
+              <rng:zeroOrMore>
+                <rng:ref name="model.mdivLike"/>
+              </rng:zeroOrMore>
+            </rng:choice>
+          </content>
+          <remarks>
+            <p>The <gi scheme="MEI">mdiv</gi> element may contain one or both of 2 possible views of the
+              music. The score view is the traditional full and open score while the parts view contains
+              each performer's view of the score; that is, his part. These 2 views are necessary because
+              it is not always possible or desirable to generate one from the other. The <gi
+                scheme="MEI">score</gi> and <gi scheme="MEI">parts</gi> elements are placed here and not
+              directly within the <gi scheme="MEI">body</gi> element because score and part
+              characteristics may change from <gi scheme="MEI">mdiv</gi> to <gi scheme="MEI">mdiv</gi>.
+              For example, the 2nd movement of a symphony may require different performing forces (and
+              therefore different score and part layout) than the other movements. The <gi scheme="MEI"
+                >mdiv</gi> element may be recursively nested in order to represent music which exhibits
+              this kind of structure. For example, an opera is normally divided into acts, which are in
+              turn divided into scenes.
+              <!--This may be represented by the following markup:
+        &lt;mdiv&gt; &lt;- the opera &lt;mdiv&gt; &lt;- act I &lt;mdiv&gt; &lt;- scene i
+        &lt;mdiv&gt; &lt;- scene ii &lt;/mdiv&gt; &lt;mdiv&gt; &lt;- act II &lt;mdiv&gt; &lt;- scene
+        i &lt;mdiv&gt; &lt;- scene ii &lt;/mdiv&gt; &lt;/mdiv&gt;--></p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Addition of <draft> element -->
+        <elementSpec ident="draft" module="MEI.shared" mode="add">
+          <desc>A version of the musical content that is unfinished – a sketch, draft or similar.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.declaring"/>
+            <memberOf key="att.typed"/>
+            <memberOf key="att.trans"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:ref name="model.appLike"/>
+                <rng:ref name="model.divLike"/>
+                <rng:ref name="model.milestoneLike.music"/>
+                <rng:ref name="model.annotLike"/>
+                <rng:ref name="model.graphicprimitiveLike"/>
+                <rng:ref name="model.editLike"/>
+                <rng:ref name="model.transcriptionLike"/>
+                <rng:ref name="model.scorePart"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+          <remarks>
+            <p>Drafts may have any kind of score setup – an incomplete particell with multiple staves may 
+              very well be regarded as <gi scheme="MEI">draft</gi>. However, their distinctive incompleteness 
+              is important: It is not possible to map their content 1:1 to a later finished <gi scheme="MEI">score</gi>
+            (or <gi scheme="MEI">part</gi>). Therefore, they allow only selective mapping, which can be done using
+              <gi scheme="MEI">relation</gi>s with <att>rel</att>="isReconfigurationOf" inside the <gi scheme="MEI">genDesc</gi> element.  
+            </p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Addition of <drafts> element -->
+        <elementSpec ident="drafts" module="MEI.shared" mode="add">
+          <desc>Provides a container for drafts.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.declaring"/>
+            <memberOf key="att.typed"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:ref name="draft"/>
+            </rng:zeroOrMore>
+          </content>
+        </elementSpec>
+        
+        <!-- Changes to att.common.anl attribute class
+          * adding @precedes
+          * adding @follows
+        -->
+        <classSpec ident="att.common.anl" module="MEI.analysis" type="atts" mode="replace">
+          <desc>Common analytical attributes. When the MEI.performance module is used, the when
+            attribute is also a member of this attribute class.</desc>
+          <classes>
+            <memberOf key="att.alignment"/>
+          </classes>
+          <attList>
+            <attDef ident="copyof" usage="opt">
+              <desc>Points to an element of which the current element is a copy.</desc>
+              <datatype>
+                <rng:ref name="data.URI"/>
+              </datatype>
+              <constraintSpec ident="When_copyof_element_empty" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="mei:*[@copyof]">
+                    <sch:assert test="count(child::node()) = 0">An element with a copyof attribute
+                      cannot have content.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+              <constraintSpec ident="check_copyofTarget" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="@copyof">
+                    <sch:assert role="warning" test="not(normalize-space(.) eq '')">@copyof attribute
+                      has no content.</sch:assert>
+                    <sch:assert role="warning"
+                      test="every $i in tokenize(., '\s+') satisfies substring($i,2)=//mei:*/@xml:id"
+                      >The value in @copyof must correspond to the @xml:id attribute of an
+                      element.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+            </attDef>
+            <attDef ident="corresp" usage="opt">
+              <desc>Used to point to other elements that correspond to this one in a generic
+                fashion.</desc>
+              <datatype maxOccurs="unbounded">
+                <rng:ref name="data.URI"/>
+              </datatype>
+              <constraintSpec ident="check_correspTarget" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="@corresp">
+                    <sch:assert role="warning" test="not(normalize-space(.) eq '')">@corresp attribute
+                      has no content.</sch:assert>
+                    <sch:assert role="warning"
+                      test="every $i in tokenize(., '\s+') satisfies substring($i,2)=//mei:*/@xml:id"
+                      >Each value in @corresp must correspond to the @xml:id attribute of an
+                      element.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+            </attDef>
+            <attDef ident="next" usage="opt">
+              <desc>Used to point to the next event(s) in a user-defined collection.</desc>
+              <datatype maxOccurs="unbounded">
+                <rng:ref name="data.URI"/>
+              </datatype>
+              <constraintSpec ident="check_nextTarget" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="@next">
+                    <sch:assert role="warning" test="not(normalize-space(.) eq '')">@next attribute has
+                      no content.</sch:assert>
+                    <sch:assert role="warning"
+                      test="every $i in tokenize(., '\s+') satisfies substring($i,2)=//mei:*/@xml:id"
+                      >Each value in @next must correspond to the @xml:id attribute of an
+                      element.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+            </attDef>
+            <attDef ident="precedes" usage="opt" mode="add">
+              <desc>Points to one or more events in a user-defined collection that are known to be
+                successors of the current element.</desc>
+              <datatype maxOccurs="unbounded">
+                <rng:ref name="data.URI"/>
+              </datatype>
+              <constraintSpec ident="check_precedesTarget" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="@precedes">
+                    <sch:assert role="warning" test="not(normalize-space(.) eq '')">@precedes attribute has
+                      no content.</sch:assert>
+                    <sch:assert role="warning"
+                      test="every $i in tokenize(., '\s+') satisfies substring($i,2)=//mei:*/@xml:id"
+                      >Each value in @precedes must correspond to the @xml:id attribute of an
+                      element.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+            </attDef>
+            <attDef ident="prev" usage="opt">
+              <desc>Points to the previous event(s) in a user-defined collection.</desc>
+              <datatype maxOccurs="unbounded">
+                <rng:ref name="data.URI"/>
+              </datatype>
+              <constraintSpec ident="check_prevTarget" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="@prev">
+                    <sch:assert role="warning" test="not(normalize-space(.) eq '')">@prev attribute has
+                      no content.</sch:assert>
+                    <sch:assert role="warning"
+                      test="every $i in tokenize(., '\s+') satisfies substring($i,2)=//mei:*/@xml:id"
+                      >Each value in @prev must correspond to the @xml:id attribute of an
+                      element.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+            </attDef>
+            <attDef ident="follows" usage="opt" mode="add">
+              <desc>points to one or more events in a user-defined collection that are known to be
+                predecessors of the current element.</desc>
+              <datatype maxOccurs="unbounded">
+                <rng:ref name="data.URI"/>
+              </datatype>
+              <constraintSpec ident="check_followsTarget" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="@follows">
+                    <sch:assert role="warning" test="not(normalize-space(.) eq '')">@follows attribute has
+                      no content.</sch:assert>
+                    <sch:assert role="warning"
+                      test="every $i in tokenize(., '\s+') satisfies substring($i,2)=//mei:*/@xml:id"
+                      >Each value in @follows must correspond to the @xml:id attribute of an
+                      element.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+            </attDef>
+            <attDef ident="sameas" usage="opt">
+              <desc>Points to an element that is the same as the current element but is not a literal
+                copy of the current element.</desc>
+              <datatype maxOccurs="unbounded">
+                <rng:ref name="data.URI"/>
+              </datatype>
+              <constraintSpec ident="check_sameasTarget" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="@sameas">
+                    <sch:assert role="warning" test="not(normalize-space(.) eq '')">@sameas attribute
+                      has no content.</sch:assert>
+                    <sch:assert role="warning"
+                      test="every $i in tokenize(., '\s+') satisfies substring($i,2)=//mei:*/@xml:id"
+                      >Each value in @sameas must correspond to the @xml:id attribute of an
+                      element.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+            </attDef>
+            <attDef ident="synch" usage="opt">
+              <desc>Points to elements that are synchronous with the current element.</desc>
+              <datatype maxOccurs="unbounded">
+                <rng:ref name="data.URI"/>
+              </datatype>
+              <constraintSpec ident="check_synchTarget" scheme="isoschematron">
+                <constraint>
+                  <sch:rule context="@synch">
+                    <sch:assert role="warning" test="not(normalize-space(.) eq '')">@synch attribute has
+                      no content.</sch:assert>
+                    <sch:assert role="warning"
+                      test="every $i in tokenize(., '\s+') satisfies substring($i,2)=//mei:*/@xml:id"
+                      >Each value in @synch must correspond to the @xml:id attribute of an
+                      element.</sch:assert>
+                  </sch:rule>
+                </constraint>
+              </constraintSpec>
+            </attDef>
+          </attList>
+        </classSpec>
+        
+        <!-- Changes to <rend> element
+          * adding @facs through att.facsimile
+        -->
+        <elementSpec ident="rend" module="MEI.shared" mode="change">
+          <desc>(render) – A formatting element indicating special visual rendering, e.g., bold or
+            italicized, of a text word or phrase.</desc>
+          <classes mode="change">
+            <memberOf key="att.color"/>
+            <memberOf key="att.common"/>
+            <memberOf key="att.horizontalalign"/>
+            <memberOf key="att.lang"/>
+            <memberOf key="att.typography"/>
+            <memberOf key="att.whitespace"/>
+            <memberOf key="model.rendLike"/>
+            <memberOf key="att.facsimile" mode="add"/>
+          </classes>
+          <remarks>
+            <p>Instead of using <gi scheme="MEI">rend</gi> to specify a facsimile zone for a text part, one could think about a generic element
+              like TEI's ab element or similar.</p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Addition of <foliumSetup> element -->
+        <elementSpec ident="foliumSetup" module="MEI.edittrans" mode="add">
+          <desc>Describes the order of folios and bifolios making up the textblock of a manuscript or print.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="model.physDescPart"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:ref name="model.foliumLike"/>
+                <rng:ref name="model.bifoliumLike"/>
+                <rng:ref name="del"/>
+                <rng:ref name="add"/>
+                <rng:ref name="damage"/>
+                <rng:ref name="gap"/>
+                <rng:ref name="restore"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+          <remarks>
+            <p>The <gi scheme="MEI">folium</gi> and <gi scheme="MEI">bifolium</gi> elements in this 
+              element are used to describe the physical order of <gi scheme="MEI">surface</gi> elements
+              elsewhere. The specific purpose of <gi scheme="MEI">foliumSetup</gi> is to transcribe
+              the addition and removal of pages as part of modifications to the document. Therefore, it 
+              also allows the <gi scheme="MEI">add</gi>ition and <gi scheme="MEI">del</gi>etion of complete
+              pages, as well as the description of missing pages by providing <gi scheme="MEI">gap</gi>.</p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Addition of model.foliumLike model class -->
+        <classSpec ident="model.foliumLike" type="model" module="MEI.edittrans" mode="add">
+          <desc>Collects foliumlike elements.</desc>
+        </classSpec>
+        
+        <!-- Addition of model.bifoliumLike model class -->
+        <classSpec ident="model.bifoliumLike" type="model" module="MEI.edittrans" mode="add">
+          <desc>Collects bifoliumlike elements.</desc>
+        </classSpec>
+        
+        <!-- Addition of model.bifoliumLike model class -->
+        <classSpec ident="model.paperModLike" type="model" module="MEI.edittrans" mode="add">
+          <desc>Groups elements dealing with modifications of document pages.</desc>
+        </classSpec>
+        
+        <!-- Addition of att.foliumSurfaces attribute class -->
+        <classSpec ident="att.foliumSurfaces" module="MEI.edittrans" type="atts" mode="add">
+          <desc>Attributes referencing to <gi scheme="MEI">surface</gi> elements providing more information about a folium.</desc>
+          <attList>
+            <attDef ident="recto" usage="opt">
+              <desc>A reference to a <gi scheme="MEI">surface</gi> element positioned on the recto side of the sheet.</desc>
+              <datatype>
+                <rng:ref name="data.URI"/>
+              </datatype>
+            </attDef>
+            <attDef ident="verso" usage="opt">
+              <desc>A reference to a <gi scheme="MEI">surface</gi> element positioned on the verso side of the sheet.</desc>
+              <datatype>
+                <rng:ref name="data.URI"/>
+              </datatype>
+            </attDef>
+          </attList>
+        </classSpec>
+        
+        <!-- Addition of att.bifoliumSurfaces attribute class -->
+        <classSpec ident="att.bifoliumSurfaces" module="MEI.edittrans" type="atts" mode="add">
+          <desc>Attributes referencing to <gi scheme="MEI">surface</gi> elements providing more information about a bifolium.</desc>
+          <attList>
+            <attDef ident="outer.recto" usage="opt">
+              <desc>A reference to a <gi scheme="MEI">surface</gi> element positioned on the outer recto side of a (folded) sheet.</desc>
+              <datatype>
+                <rng:ref name="data.URI"/>
+              </datatype>
+            </attDef>
+            <attDef ident="inner.verso" usage="opt">
+              <desc>A reference to a <gi scheme="MEI">surface</gi> element positioned on the inner verso side of a (folded) sheet.</desc>
+              <datatype>
+                <rng:ref name="data.URI"/>
+              </datatype>
+            </attDef>
+            <attDef ident="inner.recto" usage="opt">
+              <desc>A reference to a <gi scheme="MEI">surface</gi> element positioned on the inner recto side of a (folded) sheet.</desc>
+              <datatype>
+                <rng:ref name="data.URI"/>
+              </datatype>
+            </attDef>
+            <attDef ident="outer.verso" usage="opt">
+              <desc>A reference to a <gi scheme="MEI">surface</gi> element positioned on the outer verso side of a (folded) sheet.</desc>
+              <datatype>
+                <rng:ref name="data.URI"/>
+              </datatype>
+            </attDef>
+          </attList>
+        </classSpec>
+        
+        <!-- Addition of <folium> element -->
+        <elementSpec ident="folium" module="MEI.edittrans" mode="add">
+          <desc>Describes a single leaf of paper.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.common.anl"/>
+            <memberOf key="att.dimensions"/>
+            <memberOf key="att.measurement"/>
+            <memberOf key="att.foliumSurfaces"/>
+            <memberOf key="model.foliumLike"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+                <rng:ref name="model.paperModLike"/>              
+            </rng:zeroOrMore>
+          </content>
+          <remarks>
+            <p>When the exact folium setup can't be identified, it is advised to use 
+              <gi scheme="MEI">folium</gi> elements only (and not guess about the presence
+              of <gi scheme="MEI">bifolium</gi>s in the document). </p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- Addition of <bifolium> element -->
+        <elementSpec ident="bifolium" module="MEI.edittrans" mode="add">
+          <desc>Describes a folded sheet of paper.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.common.anl"/>
+            <memberOf key="att.dimensions"/>
+            <memberOf key="att.measurement"/>
+            <memberOf key="att.bifoliumSurfaces"/>
+            <memberOf key="model.bifoliumLike"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:ref name="model.foliumLike"/>
+                <rng:ref name="model.bifoliumLike"/>
+                <rng:ref name="model.paperModLike"/>
+                <rng:ref name="del"/>
+                <rng:ref name="add"/>
+                <rng:ref name="damage"/>
+                <rng:ref name="gap"/>
+                <rng:ref name="restore"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+        </elementSpec>
+        
+        <!-- Addition of <patch> element -->
+        <elementSpec ident="patch" module="MEI.edittrans" mode="add">
+          <desc>A patch element is used to describe a physical writing surface attached to the original document.</desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.xy"/>
+            <memberOf key="att.measurement"/>
+            <memberOf key="att.trans"/>
+            <memberOf key="att.responsibility"/>
+            <memberOf key="att.evidence"/>
+            <memberOf key="model.paperModLike"/>
+          </classes>
+          <content>
+            <rng:choice>
+              <rng:ref name="model.foliumLike"/>
+              <rng:ref name="model.bifoliumLike"/>
+            </rng:choice>
+          </content>
+          <constraintSpec ident="check_attached_position" scheme="isoschematron" mode="add">
+            <constraint>
+              <sch:rule context="mei:patch">
+                <sch:assert
+                  test="(parent::mei:folium and @attached.to = ('recto','verso')) or (parent::mei:bifolium and @attached.to = ('outer.recto','inner.verso','inner.recto','outer.verso'))"
+                  >The allowed positions of a patch depend on its parent element.</sch:assert>
+                <sch:assert
+                  test="count(child::node()) gt 0"
+                  >A patch element must contain either a folium or a bifolium element.</sch:assert>
+              </sch:rule>
+            </constraint>
+          </constraintSpec>
+          <attList>
+            <attDef ident="attached.to" usage="req">
+              <desc>Describes the position of the patch on the parent folium / bifolium.</desc>
+              <valList type="closed">
+                <valItem ident="outer.recto">
+                  <desc>patch attached to outer recto side of bifolium</desc>
+                </valItem>
+                <valItem ident="inner.verso">
+                  <desc>patch attached to inner verso side of bifolium</desc>
+                </valItem>
+                <valItem ident="inner.recto">
+                  <desc>patch attached to inner recto side of bifolium</desc>
+                </valItem>
+                <valItem ident="outer.verso">
+                  <desc>patch attached to outer verso side of bifolium</desc>
+                </valItem>
+                <valItem ident="recto">
+                  <desc>patch attached to recto side of folium</desc>
+                </valItem>
+                <valItem ident="verso">
+                  <desc>patch attached to verso side of folium</desc>
+                </valItem>
+              </valList>
+            </attDef>
+            <attDef ident="attached.by" usage="opt">
+              <desc>Describes the method of attachment of the patch.</desc>
+              <valList type="semi">
+                <valItem ident="glue">
+                  <desc>patch is glued on surface beneath</desc>
+                </valItem>
+                <valItem ident="thread">
+                  <desc>patch is sewn on surface beneath</desc>
+                </valItem>
+                <valItem ident="needle">
+                  <desc>patch is pinned on surface beneath</desc>
+                </valItem>
+                <valItem ident="tape">
+                  <desc>patch is taped on surface beneath using an adhesive strip</desc>
+                </valItem>
+                <valItem ident="stapler">
+                  <desc>patch is attached on surface beneath using a stapler</desc>
+                </valItem>
+              </valList>
+            </attDef>
+          </attList>
+          <remarks>
+            <p>A patch must always contain a <gi scheme="MEI">folium</gi> or <gi scheme="MEI">bifolium</gi> element.
+              The @x and @y attributes are used to position the patch on it's parent surface by indicating the upper left corner of the patch.
+              The size of the patch is encoded using the @height and @width attributes on the child folium (or bifolium).</p>
+          </remarks>
+          <remarks>
+            <p>
+              TODO: It remains unclear how to specify which part of the patch is attached to the underlying surface. Right now, the assumption is that it 
+              is always attached with the patch's verso (or outer.verso) side, but what about patches that can be folded up or down? 
+            </p>
+          </remarks>          
+        </elementSpec>
+        
+        <!-- Addition of <cutOff> element -->
+        <elementSpec ident="cutOff" module="MEI.edittrans" mode="add">
+          <desc>A cutoff is a section of a document sheet that has been removed and is now missing. </desc>
+          <classes>
+            <memberOf key="att.common"/>
+            <memberOf key="att.xy"/>
+            <memberOf key="att.dimensions"/>
+            <memberOf key="att.measurement"/>
+            <memberOf key="att.trans"/>
+            <memberOf key="att.responsibility"/>
+            <memberOf key="att.evidence"/>
+            <memberOf key="model.paperModLike"/>
+          </classes>
+          <content>
+            <rng:zeroOrMore>
+              <rng:choice>
+                <rng:ref name="model.foliumLike"/>
+                <rng:ref name="model.bifoliumLike"/>
+              </rng:choice>
+            </rng:zeroOrMore>
+          </content>
+          <attList>
+            <attDef ident="removed.from" usage="req">
+              <desc>Describes the position of the cutOff on the parent folium / bifolium.</desc>
+              <valList type="closed">
+                <valItem ident="outer.recto">
+                  <desc>removed from outer recto side of bifolium</desc>
+                </valItem>
+                <valItem ident="inner.verso">
+                  <desc>removed from inner verso side of bifolium</desc>
+                </valItem>
+                <valItem ident="inner.recto">
+                  <desc>removed from inner recto side of bifolium</desc>
+                </valItem>
+                <valItem ident="outer.verso">
+                  <desc>removed from outer verso side of bifolium</desc>
+                </valItem>
+                <valItem ident="recto">
+                  <desc>removed from recto side of folium</desc>
+                </valItem>
+                <valItem ident="verso">
+                  <desc>removed from verso side of folium</desc>
+                </valItem>
+              </valList>
+            </attDef>
+            <attDef ident="removed.by" usage="opt">
+              <desc>Describes the method of removing the cutOff.</desc>
+              <valList type="semi">
+                <valItem ident="cut">
+                  <desc>section is cleanly cutted by a knife, scissor or other sharp blade</desc>
+                </valItem>
+                <valItem ident="rip">
+                  <desc>section is ripped off the page, leaving a rough edge</desc>
+                </valItem>
+              </valList>
+            </attDef>
+          </attList>
+          <remarks>
+            <p>The dimensions (@width, @height) of the parent element (e.g. <gi scheme="MEI">folium</gi>) indicate the size of the 
+              bounding box of the remaining part of the page. That is, if the complete lower half of a page has been cut, the @width and 
+              @height attributes describe the remaining upper half. If, in contrast, only the lower right quarter of the page has been cut, 
+              these attributes still indicate the size of the full page (assuming that the removed section was a regular rectangle). 
+            </p>
+          </remarks>
+          <remarks>
+            <p>The dimensions (@width, @height) on <gi scheme="MEI">cutOff</gi> itself are only to be used when there is a "gap" in the 
+              manuscript that allows to specify the dimensions of that missing part. In this case, the bounding box dimensions are given, 
+              together with @x and @y to indicate the upper left point on the original page. If, however, the removed section is available 
+              by itself, then a corresponding <gi scheme="MEI">folium</gi> (or <gi scheme="MEI">bifolium</gi>) should be placed inside 
+              the <gi scheme="MEI">cutOff</gi> element, and should provide it's own dimensions using @width and @height there. In this case, 
+              @width and @height on <gi scheme="MEI">cutOff</gi> is expendable.
+            </p>
+          </remarks>
+        </elementSpec>
+        
+        <!-- todo: cpMark -->
+        
+      </schemaSpec>
+    </body>
+  </text>
+</TEI>
